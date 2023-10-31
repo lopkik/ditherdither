@@ -21,3 +21,28 @@ export const createThresholdImageData = (
   }
   return thresholdImageData
 }
+
+export const createRandomThresholdImageData = (
+  baseImageData: ImageData,
+  context: CanvasRenderingContext2D
+) => {
+  const randomThresholdImageData = context.createImageData(baseImageData)
+  for (let i = 0; i < baseImageData.data.length; i += 4) {
+    const randomThreshold = Math.floor(Math.random() * 256)
+    let r = baseImageData.data[i + 0]
+    let g = baseImageData.data[i + 1]
+    let b = baseImageData.data[i + 2]
+    if ((r + g + b) / 3 > randomThreshold) {
+      randomThresholdImageData.data[i + 0] = 255
+      randomThresholdImageData.data[i + 1] = 255
+      randomThresholdImageData.data[i + 2] = 255
+      randomThresholdImageData.data[i + 3] = 255
+    } else {
+      randomThresholdImageData.data[i + 0] = 0
+      randomThresholdImageData.data[i + 1] = 0
+      randomThresholdImageData.data[i + 2] = 0
+      randomThresholdImageData.data[i + 3] = 255
+    }
+  }
+  return randomThresholdImageData
+}
