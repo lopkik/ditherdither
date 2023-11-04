@@ -3,6 +3,7 @@ import examplePicture from "./assets/Michelangelo's_David_-_63_grijswaarden.png"
 import {
   createOrderedBayerImageData,
   createRandomThresholdImageData,
+  createSussyImageData,
   createThresholdImageData,
 } from "./utils"
 import FormattedCanvas from "./components/FormattedCanvas"
@@ -16,6 +17,7 @@ function App() {
   const bayerDim2CanvasRef = useRef<HTMLCanvasElement>(null)
   const bayerDim3CanvasRef = useRef<HTMLCanvasElement>(null)
   const bayerDim4CanvasRef = useRef<HTMLCanvasElement>(null)
+  const sussyCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const onImageLoad = () => {
     const canvasRefs = [
@@ -26,6 +28,7 @@ function App() {
       bayerDim2CanvasRef,
       bayerDim3CanvasRef,
       bayerDim4CanvasRef,
+      sussyCanvasRef,
     ]
     if (!imageRef.current || canvasRefs.some((canvasRef) => !canvasRef.current))
       return
@@ -90,6 +93,10 @@ function App() {
     bayerDim4CanvasRef.current
       ?.getContext("2d")
       ?.putImageData(bayerDim4ImageData, 0, 0)
+
+    // Sussy dithering
+    const sussyImageData = createSussyImageData(imageData, context)
+    sussyCanvasRef.current?.getContext("2d")?.putImageData(sussyImageData, 0, 0)
   }
 
   return (
@@ -99,10 +106,12 @@ function App() {
         <img ref={imageRef} src={examplePicture} onLoad={onImageLoad} />
       </div>
       <hr />
+
       <FormattedCanvas title='Base Canvas' ref={baseCanvasRef} />
       <FormattedCanvas title='Set threshold' ref={thresholdCanvasRef} />
       <FormattedCanvas title='Random threshold' ref={randomCanvasRef} />
       <hr />
+
       <p>Ordered dithering</p>
       <FormattedCanvas
         title='2**1 dimension bayer matrix'
@@ -120,6 +129,10 @@ function App() {
         title='2**4 dimension bayer matrix'
         ref={bayerDim4CanvasRef}
       />
+      <hr />
+
+      <p>Sussy(?) dithering</p>
+      <FormattedCanvas title='Sussy dithering' ref={sussyCanvasRef} />
     </div>
   )
 }

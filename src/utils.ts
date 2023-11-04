@@ -111,3 +111,99 @@ export const createOrderedBayerImageData = (
   }
   return halftoneImageData
 }
+
+const calculateAverageRGB = (
+  imageData: ImageData,
+  sussyMatrix: string[][],
+  startIndex: number
+) => {
+  let totalR = 0
+  let totalG = 0
+  let totalB = 0
+  for (let y = 0; y < sussyMatrix.length; y += 1) {
+    for (let x = 0; x < sussyMatrix[0].length; x += 1) {
+      const imageDataIndex = startIndex + x * 4 + y * imageData.width * 4
+      if (sussyMatrix[y][x] === "avg") {
+        let r = imageData.data[imageDataIndex + 0]
+        let g = imageData.data[imageDataIndex + 1]
+        let b = imageData.data[imageDataIndex + 2]
+        totalR += Math.pow(r, 2)
+        totalG += Math.pow(g, 2)
+        totalB += Math.pow(b, 2)
+      }
+    }
+  }
+
+  return {
+    avgR: Math.round(Math.sqrt(totalR / 14)),
+    avgG: Math.round(Math.sqrt(totalG / 14)),
+    avgB: Math.round(Math.sqrt(totalB / 14)),
+  }
+}
+
+const paintSussyDither = (
+  imageData: ImageData,
+  sussyImageData: ImageData,
+  sussyMatrix: string[][],
+  startIndex: number
+) => {
+  const { avgR, avgG, avgB } = calculateAverageRGB(
+    imageData,
+    sussyMatrix,
+    startIndex
+  )
+
+  for (let y = 0; y < sussyMatrix.length; y += 1) {
+    for (let x = 0; x < sussyMatrix[0].length; x += 1) {
+      const imageDataIndex = startIndex + x * 4 + y * imageData.width * 4
+      if (sussyMatrix[y][x] === "same") {
+        sussyImageData.data[imageDataIndex + 0] =
+          imageData.data[imageDataIndex + 0]
+        sussyImageData.data[imageDataIndex + 1] =
+          imageData.data[imageDataIndex + 1]
+        sussyImageData.data[imageDataIndex + 2] =
+          imageData.data[imageDataIndex + 2]
+        sussyImageData.data[imageDataIndex + 3] =
+          imageData.data[imageDataIndex + 3]
+      } else if (sussyMatrix[y][x] === "avg") {
+        sussyImageData.data[imageDataIndex + 0] = avgR
+        sussyImageData.data[imageDataIndex + 1] = avgG
+        sussyImageData.data[imageDataIndex + 2] = avgB
+        sussyImageData.data[imageDataIndex + 3] = 255
+      } else if (sussyMatrix[y][x] === "white") {
+        sussyImageData.data[imageDataIndex + 0] = 255
+        sussyImageData.data[imageDataIndex + 1] = 255
+        sussyImageData.data[imageDataIndex + 2] = 255
+        sussyImageData.data[imageDataIndex + 3] = 255
+      }
+    }
+  }
+}
+
+export const createSussyImageData = (
+  baseImageData: ImageData,
+  context: CanvasRenderingContext2D
+) => {
+  const sussyImageData = context.createImageData(baseImageData)
+  let sussyMatrix = [
+    ["same", "avg", "avg", "avg"],
+    ["avg", "avg", "white", "white"],
+    ["avg", "avg", "avg", "avg"],
+    ["same", "avg", "avg", "avg"],
+    ["same", "avg", "same", "avg"],
+  ]
+
+  for (let y = 0; y < baseImageData.height; y += 5) {
+    for (let x = 0; x < baseImageData.width; x += 4) {
+      const imageDataIndex = x * 4 + y * baseImageData.width * 4
+
+      paintSussyDither(
+        baseImageData,
+        sussyImageData,
+        sussyMatrix,
+        imageDataIndex
+      )
+    }
+  }
+  return sussyImageData
+}
