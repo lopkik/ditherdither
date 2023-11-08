@@ -120,9 +120,13 @@ const calculateAverageRGB = (
   let totalR = 0
   let totalG = 0
   let totalB = 0
+  const sussyPixelCount = sussyMatrix
+    .flat()
+    .reduce((prev, curr) => (curr === "avg" ? prev + 1 : prev), 0)
   for (let y = 0; y < sussyMatrix.length; y += 1) {
     for (let x = 0; x < sussyMatrix[0].length; x += 1) {
       const imageDataIndex = startIndex + x * 4 + y * imageData.width * 4
+      if (imageDataIndex > imageData.data.length) continue
       if (sussyMatrix[y][x] === "avg") {
         let r = imageData.data[imageDataIndex + 0]
         let g = imageData.data[imageDataIndex + 1]
@@ -135,17 +139,26 @@ const calculateAverageRGB = (
   }
 
   return {
-    avgR: Math.round(Math.sqrt(totalR / 14)),
-    avgG: Math.round(Math.sqrt(totalG / 14)),
-    avgB: Math.round(Math.sqrt(totalB / 14)),
+    avgR: Math.round(Math.sqrt(totalR / sussyPixelCount)),
+    avgG: Math.round(Math.sqrt(totalG / sussyPixelCount)),
+    avgB: Math.round(Math.sqrt(totalB / sussyPixelCount)),
   }
+}
+
+const quantizeColorValue = (colorValue: number, quantizeFactor: number) => {
+  return Math.round(
+    (Math.round((quantizeFactor * colorValue) / 255) * 255) / quantizeFactor
+  )
 }
 
 const paintSussyDither = (
   imageData: ImageData,
   sussyImageData: ImageData,
   sussyMatrix: string[][],
-  startIndex: number
+  startIndex: number,
+  redQuantizeFactor: number,
+  greenQuantizeFactor: number,
+  blueQuantizeFactor: number
 ) => {
   const { avgR, avgG, avgB } = calculateAverageRGB(
     imageData,
@@ -156,19 +169,37 @@ const paintSussyDither = (
   for (let y = 0; y < sussyMatrix.length; y += 1) {
     for (let x = 0; x < sussyMatrix[0].length; x += 1) {
       const imageDataIndex = startIndex + x * 4 + y * imageData.width * 4
+      const baseR = imageData.data[imageDataIndex + 0]
+      const baseG = imageData.data[imageDataIndex + 1]
+      const baseB = imageData.data[imageDataIndex + 2]
+      if (imageDataIndex > imageData.data.length) continue
       if (sussyMatrix[y][x] === "same") {
-        sussyImageData.data[imageDataIndex + 0] =
-          imageData.data[imageDataIndex + 0]
-        sussyImageData.data[imageDataIndex + 1] =
-          imageData.data[imageDataIndex + 1]
-        sussyImageData.data[imageDataIndex + 2] =
-          imageData.data[imageDataIndex + 2]
-        sussyImageData.data[imageDataIndex + 3] =
-          imageData.data[imageDataIndex + 3]
+        sussyImageData.data[imageDataIndex + 0] = quantizeColorValue(
+          baseR,
+          redQuantizeFactor - 1
+        )
+        sussyImageData.data[imageDataIndex + 1] = quantizeColorValue(
+          baseG,
+          greenQuantizeFactor - 1
+        )
+        sussyImageData.data[imageDataIndex + 2] = quantizeColorValue(
+          baseB,
+          blueQuantizeFactor - 1
+        )
+        sussyImageData.data[imageDataIndex + 3] = 255
       } else if (sussyMatrix[y][x] === "avg") {
-        sussyImageData.data[imageDataIndex + 0] = avgR
-        sussyImageData.data[imageDataIndex + 1] = avgG
-        sussyImageData.data[imageDataIndex + 2] = avgB
+        sussyImageData.data[imageDataIndex + 0] = quantizeColorValue(
+          avgR,
+          redQuantizeFactor
+        )
+        sussyImageData.data[imageDataIndex + 1] = quantizeColorValue(
+          avgG,
+          greenQuantizeFactor
+        )
+        sussyImageData.data[imageDataIndex + 2] = quantizeColorValue(
+          avgB,
+          blueQuantizeFactor
+        )
         sussyImageData.data[imageDataIndex + 3] = 255
       } else if (sussyMatrix[y][x] === "white") {
         sussyImageData.data[imageDataIndex + 0] = 255
@@ -182,26 +213,32 @@ const paintSussyDither = (
 
 export const createSussyImageData = (
   baseImageData: ImageData,
-  context: CanvasRenderingContext2D
+  context: CanvasRenderingContext2D,
+  redQuantizeFactor: number,
+  greenQuantizeFactor: number,
+  blueQuantizeFactor: number
 ) => {
   const sussyImageData = context.createImageData(baseImageData)
   let sussyMatrix = [
-    ["same", "avg", "avg", "avg"],
-    ["avg", "avg", "white", "white"],
-    ["avg", "avg", "avg", "avg"],
-    ["same", "avg", "avg", "avg"],
-    ["same", "avg", "same", "avg"],
+    ["same", "avg", "avg", "avg", "same"],
+    ["avg", "avg", "white", "white", "same"],
+    ["avg", "avg", "avg", "avg", "same"],
+    ["same", "avg", "avg", "avg", "same"],
+    ["same", "avg", "same", "avg", "same"],
+    ["same", "same", "same", "same", "same"],
   ]
 
-  for (let y = 0; y < baseImageData.height; y += 5) {
-    for (let x = 0; x < baseImageData.width; x += 4) {
+  for (let y = 0; y < baseImageData.height; y += sussyMatrix.length) {
+    for (let x = 0; x < baseImageData.width; x += sussyMatrix[0].length) {
       const imageDataIndex = x * 4 + y * baseImageData.width * 4
-
       paintSussyDither(
         baseImageData,
         sussyImageData,
         sussyMatrix,
-        imageDataIndex
+        imageDataIndex,
+        redQuantizeFactor,
+        greenQuantizeFactor,
+        blueQuantizeFactor
       )
     }
   }
