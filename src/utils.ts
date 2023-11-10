@@ -114,7 +114,7 @@ export const createOrderedBayerImageData = (
 
 const calculateAverageRGB = (
   imageData: ImageData,
-  sussyMatrix: string[][],
+  sussyMatrix: SusMatrixValue[][],
   startIndex: number
 ) => {
   let totalR = 0
@@ -122,12 +122,12 @@ const calculateAverageRGB = (
   let totalB = 0
   const sussyPixelCount = sussyMatrix
     .flat()
-    .reduce((prev, curr) => (curr === "avg" ? prev + 1 : prev), 0)
+    .reduce((prev, curr) => (curr === "susGuy" ? prev + 1 : prev), 0)
   for (let y = 0; y < sussyMatrix.length; y += 1) {
     for (let x = 0; x < sussyMatrix[0].length; x += 1) {
       const imageDataIndex = startIndex + x * 4 + y * imageData.width * 4
       if (imageDataIndex > imageData.data.length) continue
-      if (sussyMatrix[y][x] === "avg") {
+      if (sussyMatrix[y][x] === "susGuy") {
         let r = imageData.data[imageDataIndex + 0]
         let g = imageData.data[imageDataIndex + 1]
         let b = imageData.data[imageDataIndex + 2]
@@ -154,12 +154,13 @@ const quantizeColorValue = (colorValue: number, quantizeFactor: number) => {
 const paintSussyDither = (
   imageData: ImageData,
   sussyImageData: ImageData,
-  sussyMatrix: string[][],
+  sussyMatrix: SusMatrixValue[][],
   startIndex: number,
-  redQuantizeFactor: number,
-  greenQuantizeFactor: number,
-  blueQuantizeFactor: number
+  options: SussyDitherOptions
 ) => {
+  const redQuantizeFactor = options.redQuantizeFactor ?? 255
+  const greenQuantizeFactor = options.greenQuantizeFactor ?? 255
+  const blueQuantizeFactor = options.blueQuantizeFactor ?? 255
   const { avgR, avgG, avgB } = calculateAverageRGB(
     imageData,
     sussyMatrix,
@@ -173,21 +174,21 @@ const paintSussyDither = (
       const baseG = imageData.data[imageDataIndex + 1]
       const baseB = imageData.data[imageDataIndex + 2]
       if (imageDataIndex > imageData.data.length) continue
-      if (sussyMatrix[y][x] === "same") {
+      if (sussyMatrix[y][x] === "nonSus") {
         sussyImageData.data[imageDataIndex + 0] = quantizeColorValue(
           baseR,
-          redQuantizeFactor - 1
+          redQuantizeFactor / 2
         )
         sussyImageData.data[imageDataIndex + 1] = quantizeColorValue(
           baseG,
-          greenQuantizeFactor - 1
+          greenQuantizeFactor / 2
         )
         sussyImageData.data[imageDataIndex + 2] = quantizeColorValue(
           baseB,
-          blueQuantizeFactor - 1
+          blueQuantizeFactor / 2
         )
         sussyImageData.data[imageDataIndex + 3] = 255
-      } else if (sussyMatrix[y][x] === "avg") {
+      } else if (sussyMatrix[y][x] === "susGuy") {
         sussyImageData.data[imageDataIndex + 0] = quantizeColorValue(
           avgR,
           redQuantizeFactor
@@ -201,7 +202,7 @@ const paintSussyDither = (
           blueQuantizeFactor
         )
         sussyImageData.data[imageDataIndex + 3] = 255
-      } else if (sussyMatrix[y][x] === "white") {
+      } else if (sussyMatrix[y][x] === "susEye") {
         sussyImageData.data[imageDataIndex + 0] = 255
         sussyImageData.data[imageDataIndex + 1] = 255
         sussyImageData.data[imageDataIndex + 2] = 255
@@ -214,18 +215,82 @@ const paintSussyDither = (
 export const createSussyImageData = (
   baseImageData: ImageData,
   context: CanvasRenderingContext2D,
-  redQuantizeFactor: number,
-  greenQuantizeFactor: number,
-  blueQuantizeFactor: number
+  options: SussyDitherOptions
 ) => {
   const sussyImageData = context.createImageData(baseImageData)
-  let sussyMatrix = [
-    ["same", "avg", "avg", "avg", "same"],
-    ["avg", "avg", "white", "white", "same"],
-    ["avg", "avg", "avg", "avg", "same"],
-    ["same", "avg", "avg", "avg", "same"],
-    ["same", "avg", "same", "avg", "same"],
-    ["same", "same", "same", "same", "same"],
+  let sussyMatrix: SusMatrixValue[][] = [
+    [
+      "nonSus",
+      "susGuy",
+      "susGuy",
+      "susGuy",
+      "nonSus",
+      "nonSus",
+      "susGuy",
+      "susGuy",
+      "susGuy",
+      "nonSus",
+    ],
+    [
+      "susGuy",
+      "susGuy",
+      "susEye",
+      "susEye",
+      "nonSus",
+      "nonSus",
+      "susGuy",
+      "nonSus",
+      "susGuy",
+      "nonSus",
+    ],
+    [
+      "susGuy",
+      "susGuy",
+      "susGuy",
+      "susGuy",
+      "nonSus",
+      "nonSus",
+      "nonSus",
+      "nonSus",
+      "nonSus",
+      "nonSus",
+    ],
+    [
+      "nonSus",
+      "susGuy",
+      "susGuy",
+      "susGuy",
+      "nonSus",
+      "nonSus",
+      "susGuy",
+      "susGuy",
+      "susGuy",
+      "nonSus",
+    ],
+    [
+      "nonSus",
+      "susGuy",
+      "nonSus",
+      "susGuy",
+      "nonSus",
+      "susGuy",
+      "susGuy",
+      "susEye",
+      "susEye",
+      "nonSus",
+    ],
+    [
+      "nonSus",
+      "nonSus",
+      "nonSus",
+      "nonSus",
+      "nonSus",
+      "susGuy",
+      "susGuy",
+      "susGuy",
+      "susGuy",
+      "nonSus",
+    ],
   ]
 
   for (let y = 0; y < baseImageData.height; y += sussyMatrix.length) {
@@ -236,9 +301,7 @@ export const createSussyImageData = (
         sussyImageData,
         sussyMatrix,
         imageDataIndex,
-        redQuantizeFactor,
-        greenQuantizeFactor,
-        blueQuantizeFactor
+        options
       )
     }
   }
