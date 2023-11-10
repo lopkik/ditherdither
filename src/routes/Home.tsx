@@ -17,14 +17,14 @@ const Home = () => {
 
   const onImageLoad = () => {
     const canvasRefs = [baseCanvasRef, sussyCanvasRef]
-    if (!imageRef.current || canvasRefs.some((canvasRef) => !canvasRef.current))
+    if (!imageRef.current || !baseCanvasRef.current || !sussyCanvasRef.current)
       return
     canvasRefs.forEach((canvasRef) => {
       canvasRef.current!.width = imageRef.current!.width
       canvasRef.current!.height = imageRef.current!.height
     })
 
-    let context = baseCanvasRef.current!.getContext("2d")
+    let context = baseCanvasRef.current.getContext("2d")
     if (!context) return
     context.drawImage(imageRef.current, 0, 0)
     let imageData = context.getImageData(
@@ -40,7 +40,7 @@ const Home = () => {
       greenQuantizeFactor,
       blueQuantizeFactor,
     })
-    sussyCanvasRef.current?.getContext("2d")?.putImageData(sussyImageData, 0, 0)
+    sussyCanvasRef.current.getContext("2d")?.putImageData(sussyImageData, 0, 0)
   }
 
   React.useEffect(() => {
@@ -70,17 +70,28 @@ const Home = () => {
   }, [redQuantizeFactor, greenQuantizeFactor, blueQuantizeFactor])
 
   return (
-    <div style={{ padding: "1rem" }}>
+    <div style={{ padding: "1rem", display: "flex" }}>
+      <img
+        ref={imageRef}
+        src={examplePicture}
+        onLoad={onImageLoad}
+        style={{ display: "none" }}
+      />
+
       <div>
-        <p>Original</p>
-        <img ref={imageRef} src={examplePicture} onLoad={onImageLoad} />
+        <input
+          type='file'
+          accept='image/*'
+          name='picture'
+          id='picture'
+          onChange={(event) => {
+            if (!imageRef.current || !imageRef.current.src) return
+            imageRef.current.src = URL.createObjectURL(event.target.files![0])
+          }}
+        />
+        <FormattedCanvas title='Base Canvas' ref={baseCanvasRef} />
       </div>
-      <hr />
 
-      <FormattedCanvas title='Base Canvas' ref={baseCanvasRef} />
-      <hr />
-
-      <p>Sussy(?) dithering</p>
       <div style={{ display: "flex" }}>
         <FormattedCanvas title='Sussy dithering' ref={sussyCanvasRef} />
         <div>
