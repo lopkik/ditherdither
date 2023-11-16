@@ -3,13 +3,13 @@ import React from "react"
 interface QuantizeFactorRangeInputProps {
   name: string
   quantizeFactor: number
-  setQuantizeFactor: React.Dispatch<React.SetStateAction<number>>
+  onChange: React.ChangeEventHandler<HTMLInputElement>
   min?: number
   max?: number
 }
 
 const QuantizeFactorRangeInput = (props: QuantizeFactorRangeInputProps) => {
-  const { name, quantizeFactor, setQuantizeFactor, min, max } = props
+  const { name, quantizeFactor, onChange, min, max } = props
 
   return (
     <div>
@@ -22,7 +22,7 @@ const QuantizeFactorRangeInput = (props: QuantizeFactorRangeInputProps) => {
         name={name.split(" ").join("-")}
         id={name.split(" ").join("-")}
         value={quantizeFactor}
-        onChange={(event) => setQuantizeFactor(+event.target.value)}
+        onChange={onChange}
         min={min ? `${min}` : "0"}
         max={max ? `${max}` : "255"}
       />

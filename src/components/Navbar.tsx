@@ -7,7 +7,7 @@ const Navbar = () => {
         display: "flex",
         justifyContent: "space-around",
         width: "100%",
-        padding: "1rem",
+        padding: "1rem 0rem",
       }}
     >
       <div>
