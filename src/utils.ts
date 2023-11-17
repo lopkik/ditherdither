@@ -150,7 +150,7 @@ const quantizeColorValue = (colorValue: number, quantizeFactor: number) => {
   )
 }
 
-const paintSussyDither = (
+const paintSussyMatrix = (
   imageData: ImageData,
   sussyImageData: ImageData,
   sussyMatrix: SusMatrixValue[][],
@@ -236,7 +236,7 @@ export const createSussyImageData = (
         imageDataIndex =
           x * 4 + (y - sussyMatrix.length / 2) * baseImageData.width * 4
       }
-      paintSussyDither(
+      paintSussyMatrix(
         baseImageData,
         sussyImageData,
         sussyMatrix,
@@ -249,7 +249,7 @@ export const createSussyImageData = (
         const nextImageDataIndex =
           x * 4 + (y + sussyMatrix.length / 2) * baseImageData.width * 4
         if (nextImageDataIndex < baseImageData.data.length) {
-          paintSussyDither(
+          paintSussyMatrix(
             baseImageData,
             sussyImageData,
             sussyMatrix,
@@ -261,4 +261,22 @@ export const createSussyImageData = (
     }
   }
   return sussyImageData
+}
+
+export const drawToSussyCanvas = (
+  baseCanvas: HTMLCanvasElement | null,
+  baseImageData: ImageData | null,
+  sussyCanvas: HTMLCanvasElement | null,
+  options: SussyDitherOptions
+) => {
+  if (!baseCanvas || !baseImageData || !sussyCanvas) return
+  let context = baseCanvas.getContext("2d")
+  if (!context) return
+
+  const sussyImageData = createSussyImageData(baseImageData, context, options)
+  const sussyContext = sussyCanvas.getContext("2d")
+  if (!sussyContext) return
+  createImageBitmap(sussyImageData).then((sussyImageBitMap) => {
+    sussyContext.drawImage(sussyImageBitMap, 0, 0)
+  })
 }

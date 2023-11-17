@@ -4,12 +4,13 @@ interface QuantizeFactorRangeInputProps {
   name: string
   quantizeFactor: number
   onChange: React.ChangeEventHandler<HTMLInputElement>
+  disabled?: boolean
   min?: number
   max?: number
 }
 
 const QuantizeFactorRangeInput = (props: QuantizeFactorRangeInputProps) => {
-  const { name, quantizeFactor, onChange, min, max } = props
+  const { name, quantizeFactor, onChange, disabled, min, max } = props
 
   return (
     <div>
@@ -23,6 +24,7 @@ const QuantizeFactorRangeInput = (props: QuantizeFactorRangeInputProps) => {
           onChange={onChange}
           min={min ? `${min}` : "0"}
           max={max ? `${max}` : "255"}
+          disabled={disabled ?? false}
           style={{ width: "75%", height: "20px" }}
         />
         <input
@@ -31,6 +33,9 @@ const QuantizeFactorRangeInput = (props: QuantizeFactorRangeInputProps) => {
           id=''
           value={quantizeFactor}
           onChange={onChange}
+          min={min ? `${min}` : "0"}
+          max={max ? `${max}` : "255"}
+          disabled={disabled ?? false}
           style={{ width: "25%", height: "20px" }}
         />
       </div>

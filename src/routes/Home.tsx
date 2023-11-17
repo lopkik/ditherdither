@@ -4,7 +4,7 @@ import examplePicture from "@assets/Michelangelo's_David_-_63_grijswaarden.png"
 
 import FormattedCanvas from "@components/FormattedCanvas"
 import QuantizeFactorRangeInput from "@components/QuantizeFactorRangeInput"
-import { createSussyImageData } from "../utils"
+import { createSussyImageData, drawToSussyCanvas } from "../utils"
 import { PX_VALUE_OF_1REM } from "@/constants"
 
 const Home = () => {
@@ -14,6 +14,8 @@ const Home = () => {
   const baseImageDataRef = useRef<ImageData | null>(null)
   const canvasContainerWidthRef = useRef<number | null>(null)
 
+  const [usingAllQuantizeFactor, setUsingAllQuantizeFactor] = useState(false)
+  const [allQuantizeFactor, setAllQuantizeFactor] = useState(5)
   const [redQuantizeFactor, setRedQuantizeFactor] = useState(5)
   const [greenQuantizeFactor, setGreenQuantizeFactor] = useState(8)
   const [blueQuantizeFactor, setBlueQuantizeFactor] = useState(4)
@@ -67,56 +69,66 @@ const Home = () => {
     quantizeFactorName: QuantizeFactorNames
   ) => {
     if (
-      !imageRef.current ||
       !baseCanvasRef.current ||
       !baseImageDataRef.current ||
       !sussyCanvasRef.current
     )
       return
-    let context = baseCanvasRef.current!.getContext("2d")
-    if (!context) return
 
-    try {
-      const sussyImageData = createSussyImageData(
-        baseImageDataRef.current,
-        context,
-        {
-          redQuantizeFactor:
-            quantizeFactorName === "redQuantizeFactor"
-              ? newQuantizeFactorValue
-              : redQuantizeFactor,
-          greenQuantizeFactor:
-            quantizeFactorName === "greenQuantizeFactor"
-              ? newQuantizeFactorValue
-              : greenQuantizeFactor,
-          blueQuantizeFactor:
-            quantizeFactorName === "blueQuantizeFactor"
-              ? newQuantizeFactorValue
-              : blueQuantizeFactor,
-        }
-      )
-      const sussyContext = sussyCanvasRef.current.getContext("2d")
-      if (!sussyContext) return
-      createImageBitmap(sussyImageData).then((sussyImageBitMap) => {
-        sussyContext.drawImage(sussyImageBitMap, 0, 0)
-      })
-
-      switch (quantizeFactorName) {
-        case "redQuantizeFactor":
-          setRedQuantizeFactor(newQuantizeFactorValue)
-          break
-        case "blueQuantizeFactor":
-          setBlueQuantizeFactor(newQuantizeFactorValue)
-          break
-        case "greenQuantizeFactor":
-          setGreenQuantizeFactor(newQuantizeFactorValue)
-          break
-        default:
-          console.error(`Invalid quantizeFactorName: ${quantizeFactorName}`)
+    drawToSussyCanvas(
+      baseCanvasRef.current,
+      baseImageDataRef.current,
+      sussyCanvasRef.current,
+      {
+        redQuantizeFactor:
+          quantizeFactorName === "redQuantizeFactor"
+            ? newQuantizeFactorValue
+            : redQuantizeFactor,
+        greenQuantizeFactor:
+          quantizeFactorName === "greenQuantizeFactor"
+            ? newQuantizeFactorValue
+            : greenQuantizeFactor,
+        blueQuantizeFactor:
+          quantizeFactorName === "blueQuantizeFactor"
+            ? newQuantizeFactorValue
+            : blueQuantizeFactor,
       }
-    } catch (error) {
-      console.error(`Couldn't draw new sussy image data to canvas: ${error}`)
+    )
+
+    switch (quantizeFactorName) {
+      case "redQuantizeFactor":
+        setRedQuantizeFactor(newQuantizeFactorValue)
+        break
+      case "blueQuantizeFactor":
+        setBlueQuantizeFactor(newQuantizeFactorValue)
+        break
+      case "greenQuantizeFactor":
+        setGreenQuantizeFactor(newQuantizeFactorValue)
+        break
+      default:
+        console.error(`Invalid quantizeFactorName: ${quantizeFactorName}`)
     }
+  }
+
+  const onAllQuantizeFactorChange = (newQuantizeFactorValue: number) => {
+    if (
+      !baseCanvasRef.current ||
+      !baseImageDataRef.current ||
+      !sussyCanvasRef.current
+    )
+      return
+    drawToSussyCanvas(
+      baseCanvasRef.current,
+      baseImageDataRef.current,
+      sussyCanvasRef.current,
+      {
+        redQuantizeFactor: newQuantizeFactorValue,
+        greenQuantizeFactor: newQuantizeFactorValue,
+        blueQuantizeFactor: newQuantizeFactorValue,
+      }
+    )
+
+    setAllQuantizeFactor(newQuantizeFactorValue)
   }
 
   useEffect(() => {
@@ -160,12 +172,62 @@ const Home = () => {
 
         <div>
           <p>image controls</p>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <label htmlFor='using_all_quantize_factor'>
+              All Quantize Factor Enabled
+            </label>
+            <input
+              type='checkbox'
+              name='using_all_quantize_factor'
+              id='using_all_quantize_factor'
+              value={usingAllQuantizeFactor + ""}
+              onChange={() => {
+                setUsingAllQuantizeFactor((prev) => {
+                  if (!prev) {
+                    // switched to using all quantize factor
+                    drawToSussyCanvas(
+                      baseCanvasRef.current,
+                      baseImageDataRef.current,
+                      sussyCanvasRef.current,
+                      {
+                        redQuantizeFactor: allQuantizeFactor,
+                        greenQuantizeFactor: allQuantizeFactor,
+                        blueQuantizeFactor: allQuantizeFactor,
+                      }
+                    )
+                  } else {
+                    // switched to using red green and blue separately
+                    drawToSussyCanvas(
+                      baseCanvasRef.current,
+                      baseImageDataRef.current,
+                      sussyCanvasRef.current,
+                      {
+                        redQuantizeFactor,
+                        greenQuantizeFactor,
+                        blueQuantizeFactor,
+                      }
+                    )
+                  }
+                  return !prev
+                })
+              }}
+            />
+          </div>
+          <QuantizeFactorRangeInput
+            name='All Quantize Factor'
+            quantizeFactor={allQuantizeFactor}
+            onChange={(event) => {
+              onAllQuantizeFactorChange(+event.target.value)
+            }}
+            disabled={!usingAllQuantizeFactor}
+          />
           <QuantizeFactorRangeInput
             name='Red Quantize Factor'
             quantizeFactor={redQuantizeFactor}
             onChange={(event) => {
               onQuantizeFactorChange(+event.target.value, "redQuantizeFactor")
             }}
+            disabled={usingAllQuantizeFactor}
           />
           <QuantizeFactorRangeInput
             name='Green Quantize Factor'
@@ -173,6 +235,7 @@ const Home = () => {
             onChange={(event) => {
               onQuantizeFactorChange(+event.target.value, "greenQuantizeFactor")
             }}
+            disabled={usingAllQuantizeFactor}
           />
           <QuantizeFactorRangeInput
             name='Blue Quantize Factor'
@@ -180,6 +243,7 @@ const Home = () => {
             onChange={(event) => {
               onQuantizeFactorChange(+event.target.value, "blueQuantizeFactor")
             }}
+            disabled={usingAllQuantizeFactor}
           />
         </div>
       </div>
