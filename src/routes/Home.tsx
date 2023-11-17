@@ -131,6 +131,42 @@ const Home = () => {
     setAllQuantizeFactor(newQuantizeFactorValue)
   }
 
+  const randomizeQuantizeFactors = () => {
+    let randomAllQuantizeFactor
+    let randomRedQuantizeFactor
+    let randomGreenQuantizeFactor
+    let randomBlueQuantizeFactor
+    if (usingAllQuantizeFactor) {
+      randomAllQuantizeFactor = Math.round(Math.random() * 255)
+      setAllQuantizeFactor(randomAllQuantizeFactor)
+    } else {
+      randomRedQuantizeFactor = Math.round(Math.random() * 255)
+      randomGreenQuantizeFactor = Math.round(Math.random() * 255)
+      randomBlueQuantizeFactor = Math.round(Math.random() * 255)
+      setRedQuantizeFactor(randomRedQuantizeFactor)
+      setGreenQuantizeFactor(randomGreenQuantizeFactor)
+      setBlueQuantizeFactor(randomBlueQuantizeFactor)
+    }
+
+    if (
+      !baseCanvasRef.current ||
+      !baseImageDataRef.current ||
+      !sussyCanvasRef.current
+    )
+      return
+    drawToSussyCanvas(
+      baseCanvasRef.current,
+      baseImageDataRef.current,
+      sussyCanvasRef.current,
+      {
+        redQuantizeFactor: randomAllQuantizeFactor ?? randomRedQuantizeFactor,
+        greenQuantizeFactor:
+          randomAllQuantizeFactor ?? randomGreenQuantizeFactor,
+        blueQuantizeFactor: randomAllQuantizeFactor ?? randomBlueQuantizeFactor,
+      }
+    )
+  }
+
   useEffect(() => {
     // calculate 1/3 of main div width to find width of canvasContainer
     canvasContainerWidthRef.current = Math.floor(
@@ -172,46 +208,60 @@ const Home = () => {
 
         <div>
           <p>image controls</p>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <label htmlFor='using_all_quantize_factor'>
-              All Quantize Factor Enabled
-            </label>
-            <input
-              type='checkbox'
-              name='using_all_quantize_factor'
-              id='using_all_quantize_factor'
-              value={usingAllQuantizeFactor + ""}
-              onChange={() => {
-                setUsingAllQuantizeFactor((prev) => {
-                  if (!prev) {
-                    // switched to using all quantize factor
-                    drawToSussyCanvas(
-                      baseCanvasRef.current,
-                      baseImageDataRef.current,
-                      sussyCanvasRef.current,
-                      {
-                        redQuantizeFactor: allQuantizeFactor,
-                        greenQuantizeFactor: allQuantizeFactor,
-                        blueQuantizeFactor: allQuantizeFactor,
-                      }
-                    )
-                  } else {
-                    // switched to using red green and blue separately
-                    drawToSussyCanvas(
-                      baseCanvasRef.current,
-                      baseImageDataRef.current,
-                      sussyCanvasRef.current,
-                      {
-                        redQuantizeFactor,
-                        greenQuantizeFactor,
-                        blueQuantizeFactor,
-                      }
-                    )
-                  }
-                  return !prev
-                })
-              }}
-            />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "1rem 0rem",
+            }}
+          >
+            <div>
+              <input
+                type='checkbox'
+                name='using_all_quantize_factor'
+                id='using_all_quantize_factor'
+                value={usingAllQuantizeFactor + ""}
+                onChange={() => {
+                  setUsingAllQuantizeFactor((prev) => {
+                    if (!prev) {
+                      // switched to using all quantize factor
+                      drawToSussyCanvas(
+                        baseCanvasRef.current,
+                        baseImageDataRef.current,
+                        sussyCanvasRef.current,
+                        {
+                          redQuantizeFactor: allQuantizeFactor,
+                          greenQuantizeFactor: allQuantizeFactor,
+                          blueQuantizeFactor: allQuantizeFactor,
+                        }
+                      )
+                    } else {
+                      // switched to using red green and blue separately
+                      drawToSussyCanvas(
+                        baseCanvasRef.current,
+                        baseImageDataRef.current,
+                        sussyCanvasRef.current,
+                        {
+                          redQuantizeFactor,
+                          greenQuantizeFactor,
+                          blueQuantizeFactor,
+                        }
+                      )
+                    }
+                    return !prev
+                  })
+                }}
+              />
+              <label htmlFor='using_all_quantize_factor'>
+                All Quantize Factor Enabled
+              </label>
+            </div>
+            <div>
+              <button onClick={randomizeQuantizeFactors}>
+                Randomize Values
+              </button>
+            </div>
           </div>
           <QuantizeFactorRangeInput
             name='All Quantize Factor'
