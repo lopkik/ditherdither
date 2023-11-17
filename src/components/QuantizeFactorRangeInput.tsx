@@ -13,19 +13,27 @@ const QuantizeFactorRangeInput = (props: QuantizeFactorRangeInputProps) => {
 
   return (
     <div>
-      <label htmlFor={name.split(" ").join("-")}>
-        {name}: {quantizeFactor}
-      </label>
-      <br />
-      <input
-        type='range'
-        name={name.split(" ").join("-")}
-        id={name.split(" ").join("-")}
-        value={quantizeFactor}
-        onChange={onChange}
-        min={min ? `${min}` : "0"}
-        max={max ? `${max}` : "255"}
-      />
+      <label htmlFor={name.split(" ").join("-")}>{name}</label>
+      <div style={{ display: "flex" }}>
+        <input
+          type='range'
+          name={name.split(" ").join("-")}
+          id={name.split(" ").join("-")}
+          value={quantizeFactor}
+          onChange={onChange}
+          min={min ? `${min}` : "0"}
+          max={max ? `${max}` : "255"}
+          style={{ width: "75%", height: "20px" }}
+        />
+        <input
+          type='number'
+          name=''
+          id=''
+          value={quantizeFactor}
+          onChange={onChange}
+          style={{ width: "25%", height: "20px" }}
+        />
+      </div>
     </div>
   )
 }

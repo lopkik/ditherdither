@@ -120,14 +120,13 @@ const calculateAverageRGB = (
   let totalR = 0
   let totalG = 0
   let totalB = 0
-  const sussyPixelCount = sussyMatrix
-    .flat()
-    .reduce((prev, curr) => (curr === "susGuy" ? prev + 1 : prev), 0)
+  let sussyPixelCount = 0
   for (let y = 0; y < sussyMatrix.length; y += 1) {
     for (let x = 0; x < sussyMatrix[0].length; x += 1) {
       const imageDataIndex = startIndex + x * 4 + y * imageData.width * 4
-      if (imageDataIndex > imageData.data.length) continue
+      if (imageDataIndex > imageData.data.length || imageDataIndex < 0) continue
       if (sussyMatrix[y][x] === "susGuy") {
+        sussyPixelCount += 1
         let r = imageData.data[imageDataIndex + 0]
         let g = imageData.data[imageDataIndex + 1]
         let b = imageData.data[imageDataIndex + 2]
@@ -218,84 +217,25 @@ export const createSussyImageData = (
   options: SussyDitherOptions
 ) => {
   const sussyImageData = context.createImageData(baseImageData)
-  let sussyMatrix: SusMatrixValue[][] = [
-    [
-      "nonSus",
-      "susGuy",
-      "susGuy",
-      "susGuy",
-      "nonSus",
-      "nonSus",
-      "susGuy",
-      "susGuy",
-      "susGuy",
-      "nonSus",
-    ],
-    [
-      "susGuy",
-      "susGuy",
-      "susEye",
-      "susEye",
-      "nonSus",
-      "nonSus",
-      "susGuy",
-      "nonSus",
-      "susGuy",
-      "nonSus",
-    ],
-    [
-      "susGuy",
-      "susGuy",
-      "susGuy",
-      "susGuy",
-      "nonSus",
-      "nonSus",
-      "nonSus",
-      "nonSus",
-      "nonSus",
-      "nonSus",
-    ],
-    [
-      "nonSus",
-      "susGuy",
-      "susGuy",
-      "susGuy",
-      "nonSus",
-      "nonSus",
-      "susGuy",
-      "susGuy",
-      "susGuy",
-      "nonSus",
-    ],
-    [
-      "nonSus",
-      "susGuy",
-      "nonSus",
-      "susGuy",
-      "nonSus",
-      "susGuy",
-      "susGuy",
-      "susEye",
-      "susEye",
-      "nonSus",
-    ],
-    [
-      "nonSus",
-      "nonSus",
-      "nonSus",
-      "nonSus",
-      "nonSus",
-      "susGuy",
-      "susGuy",
-      "susGuy",
-      "susGuy",
-      "nonSus",
-    ],
+  const sussyMatrix: SusMatrixValue[][] = [
+    ["nonSus", "susGuy", "susGuy", "susGuy", "nonSus"],
+    ["susGuy", "susGuy", "susEye", "susEye", "nonSus"],
+    ["susGuy", "susGuy", "susGuy", "susGuy", "nonSus"],
+    ["nonSus", "susGuy", "susGuy", "susGuy", "nonSus"],
+    ["nonSus", "susGuy", "nonSus", "susGuy", "nonSus"],
+    ["nonSus", "nonSus", "nonSus", "nonSus", "nonSus"],
   ]
 
   for (let y = 0; y < baseImageData.height; y += sussyMatrix.length) {
     for (let x = 0; x < baseImageData.width; x += sussyMatrix[0].length) {
-      const imageDataIndex = x * 4 + y * baseImageData.width * 4
+      let imageDataIndex
+      // offset sussyMatrix on odd columns
+      if (x % 2 === 0) {
+        imageDataIndex = x * 4 + y * baseImageData.width * 4
+      } else {
+        imageDataIndex =
+          x * 4 + (y - sussyMatrix.length / 2) * baseImageData.width * 4
+      }
       paintSussyDither(
         baseImageData,
         sussyImageData,
@@ -303,6 +243,21 @@ export const createSussyImageData = (
         imageDataIndex,
         options
       )
+
+      // on last row, fill in odd column leftovers
+      if (x % 2 === 1 && y + sussyMatrix.length >= baseImageData.height) {
+        const nextImageDataIndex =
+          x * 4 + (y + sussyMatrix.length / 2) * baseImageData.width * 4
+        if (nextImageDataIndex < baseImageData.data.length) {
+          paintSussyDither(
+            baseImageData,
+            sussyImageData,
+            sussyMatrix,
+            nextImageDataIndex,
+            options
+          )
+        }
+      }
     }
   }
   return sussyImageData

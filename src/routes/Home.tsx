@@ -14,8 +14,8 @@ const Home = () => {
   const baseImageDataRef = useRef<ImageData | null>(null)
   const canvasContainerWidthRef = useRef<number | null>(null)
 
-  const [redQuantizeFactor, setRedQuantizeFactor] = useState(4)
-  const [greenQuantizeFactor, setGreenQuantizeFactor] = useState(4)
+  const [redQuantizeFactor, setRedQuantizeFactor] = useState(5)
+  const [greenQuantizeFactor, setGreenQuantizeFactor] = useState(8)
   const [blueQuantizeFactor, setBlueQuantizeFactor] = useState(4)
 
   const onImageLoad = () => {
@@ -64,10 +64,7 @@ const Home = () => {
 
   const onQuantizeFactorChange = (
     newQuantizeFactorValue: number,
-    quantizeFactorName:
-      | "redQuantizeFactor"
-      | "greenQuantizeFactor"
-      | "blueQuantizeFactor"
+    quantizeFactorName: QuantizeFactorNames
   ) => {
     if (
       !imageRef.current ||
