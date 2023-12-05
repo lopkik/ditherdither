@@ -267,11 +267,26 @@ export const drawToSussyCanvas = (
   baseCanvas: HTMLCanvasElement | null,
   baseImageData: ImageData | null,
   sussyCanvas: HTMLCanvasElement | null,
-  options: SussyDitherOptions
+  usingAllQuantizeFactor: boolean,
+  allQuantizeFactor: number,
+  redQuantizeFactor: number,
+  greenQuantizeFactor: number,
+  blueQuantizeFactor: number
 ) => {
   if (!baseCanvas || !baseImageData || !sussyCanvas) return
   let context = baseCanvas.getContext("2d")
   if (!context) return
+
+  let options: SussyDitherOptions = {}
+  if (usingAllQuantizeFactor) {
+    options.redQuantizeFactor = allQuantizeFactor
+    options.greenQuantizeFactor = allQuantizeFactor
+    options.blueQuantizeFactor = allQuantizeFactor
+  } else {
+    options.redQuantizeFactor = redQuantizeFactor
+    options.greenQuantizeFactor = greenQuantizeFactor
+    options.blueQuantizeFactor = blueQuantizeFactor
+  }
 
   const sussyImageData = createSussyImageData(baseImageData, context, options)
   const sussyContext = sussyCanvas.getContext("2d")
