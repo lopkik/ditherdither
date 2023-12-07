@@ -8,7 +8,7 @@ import {
 import * as React from "react"
 
 import examplePicture from "@assets/Michelangelo's_David_-_63_grijswaarden.png"
-import { drawToSussyCanvas } from "@/utils"
+import { drawToSussyCanvas, getImageDataFromImgElem } from "@/utils"
 import { PX_VALUE_OF_1REM } from "@/constants"
 
 // Original PanZoom Canvas code from here: https://codesandbox.io/p/sandbox/react-typescript-zoom-pan-html-canvas-p3itj
@@ -292,15 +292,13 @@ export default function PanZoomCanvas(props: CanvasProps) {
       !sussyContext
     )
       return
+
+    reset(context)
+    reset(sussyContext)
     const imgElem = event.target as HTMLImageElement
     context.drawImage(imgElem, 0, 0)
-    baseImageData.current = context.getImageData(
-      0,
-      0,
-      imgElem.width,
-      imgElem.height
-    )
 
+    baseImageData.current = getImageDataFromImgElem(imgElem)
     drawToSussyCanvas(
       canvasRef.current,
       baseImageData.current,
@@ -315,6 +313,12 @@ export default function PanZoomCanvas(props: CanvasProps) {
 
   return (
     <div>
+      <img
+        ref={imageRef}
+        src={examplePicture}
+        onLoad={onImageLoad}
+        style={{ display: "none" }}
+      />
       <div style={{ padding: "1rem 0rem" }}>
         <input
           type='file'
@@ -326,13 +330,16 @@ export default function PanZoomCanvas(props: CanvasProps) {
             imageRef.current.src = URL.createObjectURL(event.target.files![0])
           }}
         />
-        <img
-          ref={imageRef}
-          src={examplePicture}
-          onLoad={onImageLoad}
-          style={{ display: "none" }}
-        />
-        <button onClick={() => context && reset(context)}>Reset</button>
+        <button
+          onClick={() => {
+            if (context && sussyContext) {
+              reset(context)
+              reset(sussyContext)
+            }
+          }}
+        >
+          Reset
+        </button>
         <pre>scale: {scale}</pre>
         <pre>offset: {JSON.stringify(offset)}</pre>
         <pre>viewportTopLeft: {JSON.stringify(viewportTopLeft)}</pre>

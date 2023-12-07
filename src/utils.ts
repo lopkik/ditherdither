@@ -295,3 +295,14 @@ export const drawToSussyCanvas = (
     sussyContext.drawImage(sussyImageBitMap, 0, 0)
   })
 }
+
+export const getImageDataFromImgElem = (imgElem: HTMLImageElement) => {
+  const canvas = document.createElement("canvas")
+  const context = canvas.getContext("2d")!
+  canvas.width = imgElem.width
+  canvas.height = imgElem.height
+
+  context.drawImage(imgElem, 0, 0)
+  const imageData = context.getImageData(0, 0, imgElem.width, imgElem.height)
+  return imageData
+}
