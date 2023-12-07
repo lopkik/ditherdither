@@ -8,7 +8,11 @@ import {
 import * as React from "react"
 
 import examplePicture from "@assets/Michelangelo's_David_-_63_grijswaarden.png"
-import { drawToSussyCanvas, getImageDataFromImgElem } from "@/utils"
+import {
+  createSussyImageData,
+  drawToSussyCanvas,
+  getImageDataFromImgElem,
+} from "@/utils"
 import { PX_VALUE_OF_1REM } from "@/constants"
 
 // Original PanZoom Canvas code from here: https://codesandbox.io/p/sandbox/react-typescript-zoom-pan-html-canvas-p3itj
@@ -61,6 +65,7 @@ export default function PanZoomCanvas(props: CanvasProps) {
   const lastOffsetRef = useRef<Point>(ORIGIN)
 
   const baseImageData = useRef<ImageData | null>(null)
+  const sussyImageData = useRef<ImageData | null>(null)
   const canvasContainerWidthRef = useRef<number | null>(null)
 
   // update last offset
@@ -164,16 +169,7 @@ export default function PanZoomCanvas(props: CanvasProps) {
 
       context.drawImage(imageRef.current, 0, 0)
 
-      drawToSussyCanvas(
-        canvasRef.current,
-        baseImageData.current,
-        sussyCanvasRef.current,
-        props.usingAllQuantizeFactor,
-        props.allQuantizeFactor,
-        props.redQuantizeFactor,
-        props.greenQuantizeFactor,
-        props.blueQuantizeFactor
-      )
+      drawToSussyCanvas(sussyImageData.current, sussyCanvasRef.current)
     }
   }, [
     canvasContainerWidthRef.current,
@@ -262,16 +258,17 @@ export default function PanZoomCanvas(props: CanvasProps) {
   }, [context, mousePos.x, mousePos.y, viewportTopLeft, scale])
 
   useEffect(() => {
-    drawToSussyCanvas(
-      canvasRef.current,
+    if (!baseImageData.current || !context) return
+    sussyImageData.current = createSussyImageData(
       baseImageData.current,
-      sussyCanvasRef.current,
+      context,
       props.usingAllQuantizeFactor,
       props.allQuantizeFactor,
       props.redQuantizeFactor,
       props.greenQuantizeFactor,
       props.blueQuantizeFactor
     )
+    drawToSussyCanvas(sussyImageData.current, sussyCanvasRef.current)
   }, [
     props.usingAllQuantizeFactor,
     props.allQuantizeFactor,
@@ -299,16 +296,16 @@ export default function PanZoomCanvas(props: CanvasProps) {
     context.drawImage(imgElem, 0, 0)
 
     baseImageData.current = getImageDataFromImgElem(imgElem)
-    drawToSussyCanvas(
-      canvasRef.current,
+    sussyImageData.current = createSussyImageData(
       baseImageData.current,
-      sussyCanvasRef.current,
+      context,
       props.usingAllQuantizeFactor,
       props.allQuantizeFactor,
       props.redQuantizeFactor,
       props.greenQuantizeFactor,
       props.blueQuantizeFactor
     )
+    drawToSussyCanvas(sussyImageData.current, sussyCanvasRef.current)
   }
 
   return (

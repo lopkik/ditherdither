@@ -214,8 +214,23 @@ const paintSussyMatrix = (
 export const createSussyImageData = (
   baseImageData: ImageData,
   context: CanvasRenderingContext2D,
-  options: SussyDitherOptions
+  usingAllQuantizeFactor: boolean,
+  allQuantizeFactor: number,
+  redQuantizeFactor: number,
+  greenQuantizeFactor: number,
+  blueQuantizeFactor: number
 ) => {
+  let options: SussyDitherOptions = {}
+  if (usingAllQuantizeFactor) {
+    options.redQuantizeFactor = allQuantizeFactor
+    options.greenQuantizeFactor = allQuantizeFactor
+    options.blueQuantizeFactor = allQuantizeFactor
+  } else {
+    options.redQuantizeFactor = redQuantizeFactor
+    options.greenQuantizeFactor = greenQuantizeFactor
+    options.blueQuantizeFactor = blueQuantizeFactor
+  }
+
   const sussyImageData = context.createImageData(baseImageData)
   const sussyMatrix: SusMatrixValue[][] = [
     ["nonSus", "susGuy", "susGuy", "susGuy", "nonSus"],
@@ -264,31 +279,11 @@ export const createSussyImageData = (
 }
 
 export const drawToSussyCanvas = (
-  baseCanvas: HTMLCanvasElement | null,
-  baseImageData: ImageData | null,
-  sussyCanvas: HTMLCanvasElement | null,
-  usingAllQuantizeFactor: boolean,
-  allQuantizeFactor: number,
-  redQuantizeFactor: number,
-  greenQuantizeFactor: number,
-  blueQuantizeFactor: number
+  sussyImageData: ImageData | null,
+  sussyCanvas: HTMLCanvasElement | null
 ) => {
-  if (!baseCanvas || !baseImageData || !sussyCanvas) return
-  let context = baseCanvas.getContext("2d")
-  if (!context) return
+  if (!sussyCanvas || !sussyImageData) return
 
-  let options: SussyDitherOptions = {}
-  if (usingAllQuantizeFactor) {
-    options.redQuantizeFactor = allQuantizeFactor
-    options.greenQuantizeFactor = allQuantizeFactor
-    options.blueQuantizeFactor = allQuantizeFactor
-  } else {
-    options.redQuantizeFactor = redQuantizeFactor
-    options.greenQuantizeFactor = greenQuantizeFactor
-    options.blueQuantizeFactor = blueQuantizeFactor
-  }
-
-  const sussyImageData = createSussyImageData(baseImageData, context, options)
   const sussyContext = sussyCanvas.getContext("2d")
   if (!sussyContext) return
   createImageBitmap(sussyImageData).then((sussyImageBitMap) => {
