@@ -24,3 +24,8 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.canvas-container {
+  display: flex;
+  justify-content: space-between;
+}

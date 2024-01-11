@@ -343,7 +343,7 @@ export default function PanZoomCanvas(props: CanvasProps) {
         <pre>offset: {JSON.stringify(offset)}</pre>
         <pre>viewportTopLeft: {JSON.stringify(viewportTopLeft)}</pre>
       </div>
-      <div>
+      <div className='canvas-container'>
         <canvas
           onMouseDown={startPan}
           ref={canvasRef}
@@ -353,7 +353,6 @@ export default function PanZoomCanvas(props: CanvasProps) {
             outline: "1px solid #000",
             width: `${canvasContainerWidthRef.current!}px`,
             height: `${CANVAS_HEIGHT}px`,
-            marginRight: "1rem",
           }}
         />
         <canvas
