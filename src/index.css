@@ -7,3 +7,20 @@ body {
 #root {
   min-height: 100vh;
 }
+
+.main-home {
+  padding: 1rem;
+  display: grid;
+}
+
+@media (orientation: landscape) {
+  .main-home {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+@media (orientation: portrait) {
+  .main-home {
+    grid-template-columns: 1fr;
+  }
+}

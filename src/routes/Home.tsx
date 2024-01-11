@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import QuantizeFactorRangeInput from "@components/QuantizeFactorRangeInput"
-import PanZoomCanvas from "@/components/PanZoomCanvas"
+import PanZoomCanvas from "@components/PanZoomCanvas"
 
 const Home = () => {
   const [usingAllQuantizeFactor, setUsingAllQuantizeFactor] = useState(false)
@@ -47,81 +47,77 @@ const Home = () => {
   }, [])
 
   return (
-    <main style={{ padding: "1rem" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr" }}>
-        <div>
-          <PanZoomCanvas
-            usingAllQuantizeFactor={usingAllQuantizeFactor}
-            allQuantizeFactor={allQuantizeFactor}
-            redQuantizeFactor={redQuantizeFactor}
-            greenQuantizeFactor={greenQuantizeFactor}
-            blueQuantizeFactor={blueQuantizeFactor}
-          />
-        </div>
+    <main className='main-home' style={{ padding: "1rem" }}>
+      <div>
+        <PanZoomCanvas
+          usingAllQuantizeFactor={usingAllQuantizeFactor}
+          allQuantizeFactor={allQuantizeFactor}
+          redQuantizeFactor={redQuantizeFactor}
+          greenQuantizeFactor={greenQuantizeFactor}
+          blueQuantizeFactor={blueQuantizeFactor}
+        />
+      </div>
 
-        <div>
-          <p>image controls</p>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "1rem 0rem",
-            }}
-          >
-            <div>
-              <input
-                type='checkbox'
-                name='using_all_quantize_factor'
-                id='using_all_quantize_factor'
-                value={usingAllQuantizeFactor + ""}
-                onChange={() => {
-                  setUsingAllQuantizeFactor((prev) => !prev)
-                }}
-              />
-              <label htmlFor='using_all_quantize_factor'>
-                All Quantize Factor Enabled
-              </label>
-            </div>
-            <div>
-              <button onClick={randomizeQuantizeFactors}>
-                Randomize Values
-              </button>
-            </div>
+      <div>
+        <p>Image Controls</p>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "1rem 0rem",
+          }}
+        >
+          <div>
+            <input
+              type='checkbox'
+              name='using_all_quantize_factor'
+              id='using_all_quantize_factor'
+              value={usingAllQuantizeFactor + ""}
+              onChange={() => {
+                setUsingAllQuantizeFactor((prev) => !prev)
+              }}
+            />
+            <label htmlFor='using_all_quantize_factor'>
+              All Quantize Factor Enabled
+            </label>
           </div>
-          <QuantizeFactorRangeInput
-            name='All Quantize Factor'
-            quantizeFactor={allQuantizeFactor}
-            onChange={(event) => {
-              onAllQuantizeFactorChange(+event.target.value)
-            }}
-            disabled={!usingAllQuantizeFactor}
-          />
-          <QuantizeFactorRangeInput
-            name='Red Quantize Factor'
-            quantizeFactor={redQuantizeFactor}
-            onChange={(event) => {
-              onQuantizeFactorChange(+event.target.value, "redQuantizeFactor")
-            }}
-            disabled={usingAllQuantizeFactor}
-          />
-          <QuantizeFactorRangeInput
-            name='Green Quantize Factor'
-            quantizeFactor={greenQuantizeFactor}
-            onChange={(event) => {
-              onQuantizeFactorChange(+event.target.value, "greenQuantizeFactor")
-            }}
-            disabled={usingAllQuantizeFactor}
-          />
-          <QuantizeFactorRangeInput
-            name='Blue Quantize Factor'
-            quantizeFactor={blueQuantizeFactor}
-            onChange={(event) => {
-              onQuantizeFactorChange(+event.target.value, "blueQuantizeFactor")
-            }}
-            disabled={usingAllQuantizeFactor}
-          />
+          <div>
+            <button onClick={randomizeQuantizeFactors}>Randomize Values</button>
+          </div>
         </div>
+        <QuantizeFactorRangeInput
+          name='All Quantize Factor'
+          quantizeFactor={allQuantizeFactor}
+          onChange={(event) => {
+            onAllQuantizeFactorChange(+event.target.value)
+          }}
+          disabled={!usingAllQuantizeFactor}
+        />
+        <QuantizeFactorRangeInput
+          name='Red Quantize Factor'
+          quantizeFactor={redQuantizeFactor}
+          onChange={(event) => {
+            onQuantizeFactorChange(+event.target.value, "redQuantizeFactor")
+          }}
+          disabled={usingAllQuantizeFactor}
+        />
+        <QuantizeFactorRangeInput
+          name='Green Quantize Factor'
+          quantizeFactor={greenQuantizeFactor}
+          onChange={(event) => {
+            onQuantizeFactorChange(+event.target.value, "greenQuantizeFactor")
+          }}
+          disabled={usingAllQuantizeFactor}
+        />
+        <QuantizeFactorRangeInput
+          name='Blue Quantize Factor'
+          quantizeFactor={blueQuantizeFactor}
+          onChange={(event) => {
+            onQuantizeFactorChange(+event.target.value, "blueQuantizeFactor")
+          }}
+          disabled={usingAllQuantizeFactor}
+        />
       </div>
     </main>
   )

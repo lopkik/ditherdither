@@ -186,10 +186,12 @@ export default function PanZoomCanvas(props: CanvasProps) {
     const sussyCanvasElem = sussyCanvasRef.current
     if (canvasElem === null || sussyCanvasElem === null) return
 
-    // calculate 1/3 of main div width to find width of canvasContainer
+    // calculate 1/3 or 1/2 of main div width to find width of canvasContainer
+    const elementsInRowNum = window.innerWidth > window.innerHeight ? 3 : 2
     canvasContainerWidthRef.current =
-      Math.floor((window.innerWidth - 2 * PX_VALUE_OF_1REM) / 3) -
-      PX_VALUE_OF_1REM
+      Math.floor(
+        (window.innerWidth - 2 * PX_VALUE_OF_1REM) / elementsInRowNum
+      ) - PX_VALUE_OF_1REM
 
     function handleUpdateMouse(event: MouseEvent) {
       event.preventDefault()
