@@ -13,9 +13,18 @@ body {
   display: grid;
 }
 
+.canvas-container {
+  display: flex;
+  justify-content: space-between;
+}
+
 @media (orientation: landscape) {
   .main-home {
     grid-template-columns: 2fr 1fr;
+  }
+
+  .canvas-container {
+    padding-right: 1rem;
   }
 }
 
@@ -23,9 +32,4 @@ body {
   .main-home {
     grid-template-columns: 1fr;
   }
-}
-
-.canvas-container {
-  display: flex;
-  justify-content: space-between;
 }
