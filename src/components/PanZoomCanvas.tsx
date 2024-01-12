@@ -63,6 +63,7 @@ export default function PanZoomCanvas(props: CanvasProps) {
   const isResetRef = useRef<boolean>(false)
   const lastMousePosRef = useRef<Point>(ORIGIN)
   const lastOffsetRef = useRef<Point>(ORIGIN)
+  const initialPinchDistance = useRef<number | null>(null)
 
   const baseImageData = useRef<ImageData | null>(null)
   const sussyImageData = useRef<ImageData | null>(null)
@@ -193,11 +194,14 @@ export default function PanZoomCanvas(props: CanvasProps) {
         (window.innerWidth - 2 * PX_VALUE_OF_1REM) / elementsInRowNum
       ) - PX_VALUE_OF_1REM
 
-    function handleUpdateMouse(event: MouseEvent) {
+    function handleUpdateMouse(event: MouseEvent | TouchEvent) {
       event.preventDefault()
       if (!event.target) return
       const canvasTarget = event.target as HTMLCanvasElement
-      const viewportMousePos = { x: event.clientX, y: event.clientY }
+      const viewportMousePos =
+        event instanceof MouseEvent
+          ? { x: event.clientX, y: event.clientY }
+          : { x: event.touches[0].clientX, y: event.touches[0].clientY }
       const topLeftCanvasPos = {
         x: canvasTarget.offsetLeft,
         y: canvasTarget.offsetTop,
@@ -206,10 +210,14 @@ export default function PanZoomCanvas(props: CanvasProps) {
     }
 
     canvasElem.addEventListener("mousemove", handleUpdateMouse)
+    canvasElem.addEventListener("touchmove", handleUpdateMouse)
     sussyCanvasElem.addEventListener("mousemove", handleUpdateMouse)
+    sussyCanvasElem.addEventListener("touchmove", handleUpdateMouse)
     return () => {
       canvasElem.removeEventListener("mousemove", handleUpdateMouse)
+      canvasElem.removeEventListener("touchmove", handleUpdateMouse)
       sussyCanvasElem.removeEventListener("mousemove", handleUpdateMouse)
+      sussyCanvasElem.removeEventListener("touchmove", handleUpdateMouse)
     }
   }, [])
 
@@ -310,6 +318,66 @@ export default function PanZoomCanvas(props: CanvasProps) {
     drawToSussyCanvas(sussyImageData.current, sussyCanvasRef.current)
   }
 
+  const touchStart = (event: React.TouchEvent<HTMLCanvasElement>) => {
+    lastMousePosRef.current = {
+      x: event.touches[0].pageX,
+      y: event.touches[0].pageY,
+    }
+  }
+
+  const touchMove = (event: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!context || !sussyContext) return
+
+    if (event.type === "touchmove" && event.touches.length === 2) {
+      event.preventDefault()
+
+      let touch1 = { x: event.touches[0].clientX, y: event.touches[0].clientY }
+      let touch2 = { x: event.touches[1].clientX, y: event.touches[1].clientY }
+      let currentDistanceSquared =
+        (touch1.x - touch2.x) ** 2 + (touch1.y = touch2.y) ** 2
+
+      if (!initialPinchDistance.current) {
+        initialPinchDistance.current = currentDistanceSquared
+      } else {
+        const zoom = currentDistanceSquared / initialPinchDistance.current
+        const viewportTopLeftDelta = {
+          x: (mousePos.x / scale) * (1 - 1 / zoom),
+          y: (mousePos.y / scale) * (1 - 1 / zoom),
+        }
+        const newViewportTopLeft = addPoints(
+          viewportTopLeft,
+          viewportTopLeftDelta
+        )
+
+        context.translate(viewportTopLeft.x, viewportTopLeft.y)
+        context.scale(zoom, zoom)
+        context.translate(-newViewportTopLeft.x, -newViewportTopLeft.y)
+
+        sussyContext.translate(viewportTopLeft.x, viewportTopLeft.y)
+        sussyContext.scale(zoom, zoom)
+        sussyContext.translate(-newViewportTopLeft.x, -newViewportTopLeft.y)
+
+        setViewportTopLeft(newViewportTopLeft)
+        setScale(scale * zoom)
+        isResetRef.current = false
+      }
+    } else {
+      const lastMousePos = lastMousePosRef.current
+      const currentMousePos = {
+        x: event.touches[0].pageX,
+        y: event.touches[0].pageY,
+      } // use document so can pan off element
+      lastMousePosRef.current = currentMousePos
+
+      const mouseDiff = diffPoints(currentMousePos, lastMousePos)
+      setOffset((prevOffset) => addPoints(prevOffset, mouseDiff))
+    }
+  }
+
+  const touchEnd = (event: React.TouchEvent<HTMLCanvasElement>) => {
+    initialPinchDistance.current = null
+  }
+
   return (
     <div>
       <img
@@ -346,6 +414,8 @@ export default function PanZoomCanvas(props: CanvasProps) {
       <div className='canvas-container'>
         <canvas
           onMouseDown={startPan}
+          onTouchStart={touchStart}
+          onTouchMove={touchMove}
           ref={canvasRef}
           width={canvasContainerWidthRef.current! * ratio}
           height={CANVAS_HEIGHT * ratio}
@@ -357,6 +427,8 @@ export default function PanZoomCanvas(props: CanvasProps) {
         />
         <canvas
           onMouseDown={startPan}
+          onTouchStart={touchStart}
+          onTouchMove={touchMove}
           ref={sussyCanvasRef}
           width={canvasContainerWidthRef.current! * ratio}
           height={CANVAS_HEIGHT * ratio}
