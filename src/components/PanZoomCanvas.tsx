@@ -63,7 +63,6 @@ export default function PanZoomCanvas(props: CanvasProps) {
   const isResetRef = useRef<boolean>(false)
   const lastMousePosRef = useRef<Point>(ORIGIN)
   const lastOffsetRef = useRef<Point>(ORIGIN)
-  const initialPinchDistance = useRef<number | null>(null)
 
   const baseImageData = useRef<ImageData | null>(null)
   const sussyImageData = useRef<ImageData | null>(null)
