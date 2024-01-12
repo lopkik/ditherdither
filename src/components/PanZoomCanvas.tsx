@@ -33,7 +33,7 @@ const ORIGIN = Object.freeze({ x: 0, y: 0 })
 const CANVAS_HEIGHT = 500
 
 // adjust to device to avoid blur
-const { devicePixelRatio: ratio = 1 } = window
+// const { devicePixelRatio: ratio = 1 } = window
 
 function diffPoints(p1: Point, p2: Point) {
   return { x: p1.x - p2.x, y: p1.y - p2.y }
@@ -78,9 +78,9 @@ export default function PanZoomCanvas(props: CanvasProps) {
     (context: CanvasRenderingContext2D) => {
       if (context && !isResetRef.current) {
         // adjust for device pixel density
-        context.canvas.width = canvasContainerWidthRef.current! * ratio
-        context.canvas.height = CANVAS_HEIGHT * ratio
-        context.scale(ratio, ratio)
+        context.canvas.width = canvasContainerWidthRef.current! * 1
+        context.canvas.height = CANVAS_HEIGHT * 1
+        context.scale(1, 1)
 
         setScale(1)
 
@@ -380,8 +380,8 @@ export default function PanZoomCanvas(props: CanvasProps) {
           onTouchStart={touchStart}
           onTouchMove={touchMove}
           ref={canvasRef}
-          width={canvasContainerWidthRef.current! * ratio}
-          height={CANVAS_HEIGHT * ratio}
+          width={canvasContainerWidthRef.current! * 1}
+          height={CANVAS_HEIGHT * 1}
           style={{
             outline: "1px solid #000",
             width: `${canvasContainerWidthRef.current!}px`,
@@ -393,8 +393,8 @@ export default function PanZoomCanvas(props: CanvasProps) {
           onTouchStart={touchStart}
           onTouchMove={touchMove}
           ref={sussyCanvasRef}
-          width={canvasContainerWidthRef.current! * ratio}
-          height={CANVAS_HEIGHT * ratio}
+          width={canvasContainerWidthRef.current! * 1}
+          height={CANVAS_HEIGHT * 1}
           style={{
             outline: "1px solid #000",
             width: `${canvasContainerWidthRef.current!}px`,
