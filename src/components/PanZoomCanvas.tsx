@@ -339,7 +339,10 @@ export default function PanZoomCanvas(props: CanvasProps) {
       if (!initialPinchDistance.current) {
         initialPinchDistance.current = currentDistanceSquared
       } else {
-        const zoom = currentDistanceSquared / initialPinchDistance.current
+        const zoom =
+          currentDistanceSquared /
+          initialPinchDistance.current /
+          ZOOM_SENSITIVITY
         const viewportTopLeftDelta = {
           x: (mousePos.x / scale) * (1 - 1 / zoom),
           y: (mousePos.y / scale) * (1 - 1 / zoom),
