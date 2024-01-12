@@ -376,6 +376,7 @@ export default function PanZoomCanvas(props: CanvasProps) {
 
   const touchEnd = (event: React.TouchEvent<HTMLCanvasElement>) => {
     initialPinchDistance.current = null
+    console.log("touch end event", event)
   }
 
   return (
@@ -416,6 +417,7 @@ export default function PanZoomCanvas(props: CanvasProps) {
           onMouseDown={startPan}
           onTouchStart={touchStart}
           onTouchMove={touchMove}
+          onTouchEnd={touchEnd}
           ref={canvasRef}
           width={canvasContainerWidthRef.current! * ratio}
           height={CANVAS_HEIGHT * ratio}
